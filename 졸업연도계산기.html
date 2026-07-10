@@ -1,0 +1,598 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no"/>
+  <title>졸업연도 계산기</title>
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;700;900&family=Space+Mono:wght@700&display=swap" rel="stylesheet"/>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
+
+    html, body { height: 100%; overflow: hidden; }
+
+    body {
+      background: linear-gradient(135deg, #0f0c29, #302b63, #24243e);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-family: 'Noto Sans KR', 'Malgun Gothic', sans-serif;
+      padding: 14px;
+    }
+
+    .card {
+      background: rgba(255,255,255,0.06);
+      backdrop-filter: blur(20px);
+      border: 1px solid rgba(255,255,255,0.12);
+      border-radius: 24px;
+      padding: 18px 18px 14px;
+      width: 100%;
+      max-width: 390px;
+      box-shadow: 0 24px 60px rgba(0,0,0,0.5), inset 0 1px 0 rgba(255,255,255,0.15);
+    }
+
+    /* 헤더 */
+    .header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 14px;
+    }
+
+    .badge {
+      display: inline-block;
+      background: linear-gradient(90deg, #a78bfa, #60a5fa);
+      color: white;
+      font-size: 9px;
+      font-weight: 700;
+      letter-spacing: 2px;
+      text-transform: uppercase;
+      padding: 4px 10px;
+      border-radius: 100px;
+    }
+
+    .title {
+      font-weight: 900;
+      font-size: 17px;
+      color: #fff;
+      line-height: 1.25;
+    }
+
+    /* 섹션 */
+    .section { margin-bottom: 11px; }
+
+    .label {
+      font-size: 9px;
+      font-weight: 700;
+      letter-spacing: 2px;
+      text-transform: uppercase;
+      color: rgba(255,255,255,0.45);
+      margin-bottom: 6px;
+    }
+
+    /* 토글 */
+    .toggle-wrap {
+      display: flex;
+      background: rgba(0,0,0,0.3);
+      border-radius: 11px;
+      padding: 3px;
+      gap: 3px;
+    }
+
+    .toggle-btn {
+      flex: 1;
+      border: none;
+      border-radius: 8px;
+      font-family: 'Noto Sans KR', sans-serif;
+      font-weight: 700;
+      cursor: pointer;
+      transition: all 0.22s ease;
+      background: transparent;
+      color: rgba(255,255,255,0.38);
+      padding: 8px 4px;
+      font-size: 12px;
+    }
+
+    .toggle-btn.active-purple {
+      background: linear-gradient(135deg, #7c3aed, #4f46e5);
+      color: #fff;
+      box-shadow: 0 3px 10px rgba(124,58,237,0.45);
+    }
+
+    .toggle-btn.active-blue {
+      background: linear-gradient(135deg, #0ea5e9, #2563eb);
+      color: #fff;
+      box-shadow: 0 3px 10px rgba(14,165,233,0.45);
+    }
+
+    .sem-btn {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 2px;
+      padding: 9px 4px;
+    }
+
+    .sem-emoji { font-size: 15px; line-height: 1; }
+    .sem-name  { font-size: 11px; font-weight: 700; }
+    .sem-sub   { font-size: 9px; opacity: 0.6; }
+
+    /* 연도 선택 */
+    .year-select {
+      width: 100%;
+      padding: 10px 38px 10px 13px;
+      background: rgba(0,0,0,0.3);
+      border: 1px solid rgba(255,255,255,0.1);
+      border-radius: 11px;
+      color: #fff;
+      font-family: 'Space Mono', monospace;
+      font-size: 15px;
+      font-weight: 700;
+      cursor: pointer;
+      appearance: none;
+      outline: none;
+      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='11' height='7' viewBox='0 0 11 7'%3E%3Cpath d='M1 1l4.5 4.5L10 1' stroke='rgba(255,255,255,0.4)' stroke-width='1.5' fill='none' stroke-linecap='round'/%3E%3C/svg%3E");
+      background-repeat: no-repeat;
+      background-position: right 13px center;
+    }
+
+    .year-select option { background: #1e1b4b; color: #fff; }
+
+    /* 휴학 스테퍼 */
+    .leave-box {
+      background: rgba(0,0,0,0.25);
+      border: 1px solid rgba(255,255,255,0.09);
+      border-radius: 11px;
+      padding: 10px 14px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .leave-info { display: flex; flex-direction: column; gap: 2px; }
+
+    .leave-value {
+      font-family: 'Space Mono', monospace;
+      font-size: 15px;
+      font-weight: 700;
+      color: #fff;
+    }
+
+    .leave-value span {
+      font-size: 11px;
+      color: rgba(255,255,255,0.45);
+      margin-left: 4px;
+      font-family: 'Noto Sans KR', sans-serif;
+    }
+
+    .leave-sub {
+      font-size: 9px;
+      color: rgba(255,255,255,0.3);
+    }
+
+    .stepper {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .step-btn {
+      width: 32px; height: 32px;
+      border-radius: 9px;
+      border: 1px solid rgba(255,255,255,0.15);
+      background: rgba(255,255,255,0.07);
+      color: #fff;
+      font-size: 18px;
+      font-weight: 700;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: all 0.15s;
+      line-height: 1;
+      padding-bottom: 1px;
+    }
+
+    .step-btn:active { background: rgba(255,255,255,0.15); transform: scale(0.93); }
+    .step-btn:disabled { opacity: 0.25; cursor: default; }
+
+    .step-num {
+      font-family: 'Space Mono', monospace;
+      font-size: 16px;
+      font-weight: 700;
+      color: #fff;
+      min-width: 22px;
+      text-align: center;
+    }
+
+    /* 계산 버튼 */
+    .calc-btn {
+      width: 100%;
+      padding: 12px;
+      background: linear-gradient(135deg, #7c3aed, #4f46e5);
+      border: none;
+      border-radius: 11px;
+      color: #fff;
+      font-family: 'Noto Sans KR', sans-serif;
+      font-size: 13px;
+      font-weight: 700;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      box-shadow: 0 6px 18px rgba(124,58,237,0.35);
+      margin-bottom: 11px;
+    }
+
+    .calc-btn:active { transform: scale(0.98); }
+
+    /* 결과 */
+    .result-card {
+      background: rgba(255,255,255,0.04);
+      border: 1px solid rgba(255,255,255,0.1);
+      border-radius: 15px;
+      padding: 14px;
+      display: none;
+      animation: fadeUp 0.32s ease;
+    }
+
+    .result-card.show { display: block; }
+
+    @keyframes fadeUp {
+      from { opacity: 0; transform: translateY(7px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+
+    .result-row {
+      display: flex;
+      align-items: center;
+      gap: 11px;
+      margin-bottom: 9px;
+    }
+
+    .result-icon {
+      width: 32px; height: 32px;
+      border-radius: 9px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 14px;
+      flex-shrink: 0;
+    }
+
+    .result-icon.enter { background: rgba(96,165,250,0.15); }
+    .result-icon.grad  { background: rgba(167,139,250,0.15); }
+    .result-icon.leave { background: rgba(251,191,36,0.12); }
+
+    .result-text-label {
+      font-size: 9px;
+      color: rgba(255,255,255,0.4);
+      font-weight: 700;
+      letter-spacing: 1.5px;
+      text-transform: uppercase;
+      margin-bottom: 1px;
+    }
+
+    .result-text-value {
+      font-family: 'Space Mono', monospace;
+      font-size: 14px;
+      font-weight: 700;
+      color: #fff;
+    }
+
+    .result-text-value.highlight {
+      background: linear-gradient(90deg, #a78bfa, #60a5fa);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      font-size: 18px;
+    }
+
+    .result-text-value.yellow {
+      color: #fbbf24;
+      font-size: 13px;
+    }
+
+    .divider {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      margin: 1px 0 9px 43px;
+    }
+
+    .divider-line { flex: 1; height: 1px; background: rgba(255,255,255,0.07); }
+    .divider-dot  { width: 4px; height: 4px; border-radius: 50%; background: rgba(167,139,250,0.4); }
+
+    .badges-row {
+      display: flex;
+      gap: 5px;
+      flex-wrap: wrap;
+      margin-top: 5px;
+      margin-left: 43px;
+    }
+
+    .pill {
+      display: inline-flex;
+      align-items: center;
+      border-radius: 100px;
+      padding: 3px 9px;
+      font-size: 9px;
+      font-weight: 700;
+    }
+
+    .pill-purple { background: rgba(167,139,250,0.12); border: 1px solid rgba(167,139,250,0.25); color: #c4b5fd; }
+    .pill-blue   { background: rgba(14,165,233,0.1);   border: 1px solid rgba(14,165,233,0.25);   color: #7dd3fc; }
+    .pill-yellow { background: rgba(251,191,36,0.1);   border: 1px solid rgba(251,191,36,0.25);   color: #fde68a; }
+
+    .reset-btn {
+      width: 100%;
+      margin-top: 9px;
+      padding: 8px;
+      background: transparent;
+      border: 1px solid rgba(255,255,255,0.1);
+      border-radius: 9px;
+      color: rgba(255,255,255,0.35);
+      font-family: 'Noto Sans KR', sans-serif;
+      font-size: 11px;
+      cursor: pointer;
+    }
+
+    .reset-btn:active { background: rgba(255,255,255,0.05); }
+
+    .footer {
+      text-align: center;
+      margin-top: 10px;
+      color: rgba(255,255,255,0.18);
+      font-size: 9px;
+      letter-spacing: 0.3px;
+      line-height: 1.8;
+    }
+  </style>
+</head>
+<body>
+  <div class="card">
+
+    <!-- 헤더 -->
+    <div class="header">
+      <div class="title">내 졸업은<br>언제일까? 🎓</div>
+      <div class="badge">졸업연도 계산기</div>
+    </div>
+
+    <!-- 입학 학기 -->
+    <div class="section">
+      <div class="label">입학 학기</div>
+      <div class="toggle-wrap">
+        <button class="toggle-btn sem-btn active-blue" id="btn-spring" onclick="selectSemester('spring')">
+          <span class="sem-emoji">🌸</span>
+          <span class="sem-name">3월 입학</span>
+          <span class="sem-sub">봄학기 · 2월 졸업</span>
+        </button>
+        <button class="toggle-btn sem-btn" id="btn-fall" onclick="selectSemester('fall')">
+          <span class="sem-emoji">🍂</span>
+          <span class="sem-name">9월 입학</span>
+          <span class="sem-sub">가을학기 · 8월 졸업</span>
+        </button>
+      </div>
+    </div>
+
+    <!-- 학적 유형 -->
+    <div class="section">
+      <div class="label">학적 유형</div>
+      <div class="toggle-wrap">
+        <button class="toggle-btn active-purple" id="btn-new" onclick="selectType('new')">
+          신입학 <span style="font-size:9px;opacity:.6;margin-left:2px">(4년)</span>
+        </button>
+        <button class="toggle-btn" id="btn-transfer" onclick="selectType('transfer')">
+          편입학 <span style="font-size:9px;opacity:.6;margin-left:2px">(2년)</span>
+        </button>
+      </div>
+    </div>
+
+    <!-- 입학 연도 -->
+    <div class="section">
+      <div class="label">입학 연도</div>
+      <select class="year-select" id="year-select" onchange="hideResult()"></select>
+    </div>
+
+    <!-- 휴학 기간 -->
+    <div class="section">
+      <div class="label">휴학 기간</div>
+      <div class="leave-box">
+        <div class="leave-info">
+          <div class="leave-value" id="leave-display">0<span>학기</span></div>
+          <div class="leave-sub" id="leave-year-display">휴학 없음</div>
+        </div>
+        <div class="stepper">
+          <button class="step-btn" id="btn-minus" onclick="changeLeave(-1)" disabled>−</button>
+          <div class="step-num" id="leave-count">0</div>
+          <button class="step-btn" id="btn-plus" onclick="changeLeave(1)">+</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- 계산 버튼 -->
+    <button class="calc-btn" onclick="calculate()">졸업 연도 계산하기 →</button>
+
+    <!-- 결과 -->
+    <div class="result-card" id="result-card">
+      <div class="result-row">
+        <div class="result-icon enter">🎒</div>
+        <div>
+          <div class="result-text-label">입학</div>
+          <div class="result-text-value" id="result-enter"></div>
+        </div>
+      </div>
+
+      <div class="divider"><div class="divider-line"></div><div class="divider-dot"></div><div class="divider-line"></div></div>
+
+      <div class="result-row" id="row-leave" style="display:none">
+        <div class="result-icon leave">📅</div>
+        <div>
+          <div class="result-text-label">휴학 기간</div>
+          <div class="result-text-value yellow" id="result-leave"></div>
+        </div>
+      </div>
+
+      <div id="divider-leave" style="display:none" class="divider"><div class="divider-line"></div><div class="divider-dot"></div><div class="divider-line"></div></div>
+
+      <div class="result-row">
+        <div class="result-icon grad">🎓</div>
+        <div>
+          <div class="result-text-label">졸업 예정</div>
+          <div class="result-text-value highlight" id="result-grad"></div>
+        </div>
+      </div>
+
+      <div class="badges-row">
+        <span class="pill pill-purple" id="badge-type"></span>
+        <span class="pill pill-blue"   id="badge-sem"></span>
+        <span class="pill pill-yellow" id="badge-leave" style="display:none"></span>
+      </div>
+
+      <button class="reset-btn" onclick="resetAll()">↩ 다시 계산하기</button>
+    </div>
+
+    <div class="footer">
+      🌸 3월 입학 → 수업연한 후 2월 졸업 &nbsp;|&nbsp; 🍂 9월 입학 → 수업연한 후 8월 졸업<br>
+      휴학은 1학기(6개월) 단위로 졸업이 연장됩니다
+    </div>
+  </div>
+
+  <script>
+    let semester  = 'spring';
+    let admType   = 'new';
+    let leaveSems = 0;
+    const MAX_LEAVE = 8;
+    const currentYear = new Date().getFullYear();
+
+    // 연도 채우기
+    const sel = document.getElementById('year-select');
+    for (let y = currentYear - 10; y <= currentYear + 10; y++) {
+      const opt = document.createElement('option');
+      opt.value = y;
+      opt.textContent = y + '년';
+      if (y === currentYear) opt.selected = true;
+      sel.appendChild(opt);
+    }
+
+    function selectSemester(s) {
+      semester = s;
+      document.getElementById('btn-spring').className = 'toggle-btn sem-btn' + (s === 'spring' ? ' active-blue' : '');
+      document.getElementById('btn-fall').className   = 'toggle-btn sem-btn' + (s === 'fall'   ? ' active-blue' : '');
+      hideResult();
+    }
+
+    function selectType(t) {
+      admType = t;
+      document.getElementById('btn-new').className      = 'toggle-btn' + (t === 'new'      ? ' active-purple' : '');
+      document.getElementById('btn-transfer').className = 'toggle-btn' + (t === 'transfer' ? ' active-purple' : '');
+      hideResult();
+    }
+
+    function changeLeave(delta) {
+      leaveSems = Math.max(0, Math.min(MAX_LEAVE, leaveSems + delta));
+      updateLeaveUI();
+      hideResult();
+    }
+
+    function updateLeaveUI() {
+      document.getElementById('leave-count').textContent = leaveSems;
+      document.getElementById('leave-display').innerHTML =
+        leaveSems + '<span>학기</span>';
+
+      const years  = Math.floor(leaveSems / 2);
+      const remain = leaveSems % 2;
+      let txt = '';
+      if (leaveSems === 0) {
+        txt = '휴학 없음';
+      } else {
+        const parts = [];
+        if (years  > 0) parts.push(years + '년');
+        if (remain > 0) parts.push('1학기');
+        txt = '= ' + parts.join(' ') + ' 연장';
+      }
+      document.getElementById('leave-year-display').textContent = txt;
+
+      document.getElementById('btn-minus').disabled = (leaveSems === 0);
+      document.getElementById('btn-plus').disabled  = (leaveSems === MAX_LEAVE);
+    }
+
+    function calcGradDate(admitYear, semesterType, durationYears, leaveSemsCount) {
+      // 기준 졸업월: spring→2월(index 1), fall→8월(index 7) (0-based month index)
+      const baseMonthIdx = semesterType === 'spring' ? 1 : 7; // Feb=1, Aug=7
+      const admitMonthIdx = semesterType === 'spring' ? 2 : 8; // Mar=2, Sep=8 (0-based)
+
+      // 총 months = duration*12 + leave*6
+      const totalMonths = durationYears * 12 + leaveSemsCount * 6;
+
+      // 졸업 month index (0-based): admitMonthIdx + totalMonths - 1 (마지막 달의 전달)
+      // 실제로 spring 3월 + 48개월 → 51번째 달 → 3+48=51월 → 51-1=50번째 (0-based)
+      // 더 간단하게: gradMonth = baseMonthIdx, gradYear = admitYear + durationYears + (leave offset)
+      
+      const fullLeaveYears = Math.floor(leaveSemsCount / 2);
+      const extraSem       = leaveSemsCount % 2;
+
+      let gradYear  = admitYear + durationYears + fullLeaveYears;
+      let gradMonth; // 1-based
+
+      if (extraSem === 0) {
+        gradMonth = semesterType === 'spring' ? 2 : 8;
+      } else {
+        // 1학기 추가: spring Feb→Aug(same year), fall Aug→Feb(+1 year)
+        if (semesterType === 'spring') {
+          gradMonth = 8;
+        } else {
+          gradMonth = 2;
+          gradYear += 1;
+        }
+      }
+
+      return { gradYear, gradMonth };
+    }
+
+    function calculate() {
+      const admitYear  = parseInt(sel.value);
+      const duration   = admType === 'new' ? 4 : 2;
+      const admitMonth = semester === 'spring' ? 3 : 9;
+      const typeLabel  = admType === 'new' ? '신입학' : '편입학';
+
+      const { gradYear, gradMonth } = calcGradDate(admitYear, semester, duration, leaveSems);
+      const gradMonthStr = gradMonth + '월';
+
+      document.getElementById('result-enter').textContent = admitYear + '년 ' + admitMonth + '월';
+      document.getElementById('result-grad').textContent  = gradYear + '년 ' + gradMonthStr;
+      document.getElementById('badge-type').textContent   = '✦ ' + typeLabel + ' · ' + duration + '년';
+      document.getElementById('badge-sem').textContent    = semester === 'spring' ? '🌸 봄학기' : '🍂 가을학기';
+
+      // 휴학 표시
+      const rowLeave    = document.getElementById('row-leave');
+      const divLeave    = document.getElementById('divider-leave');
+      const badgeLeave  = document.getElementById('badge-leave');
+
+      if (leaveSems > 0) {
+        const yrs = Math.floor(leaveSems / 2);
+        const rem = leaveSems % 2;
+        const parts = [];
+        if (yrs > 0) parts.push(yrs + '년');
+        if (rem > 0) parts.push('1학기');
+        document.getElementById('result-leave').textContent = leaveSems + '학기 (' + parts.join(' ') + ')';
+        badgeLeave.textContent = '📅 휴학 ' + leaveSems + '학기';
+        rowLeave.style.display  = 'flex';
+        divLeave.style.display  = 'flex';
+        badgeLeave.style.display = 'inline-flex';
+      } else {
+        rowLeave.style.display   = 'none';
+        divLeave.style.display   = 'none';
+        badgeLeave.style.display = 'none';
+      }
+
+      const card = document.getElementById('result-card');
+      card.classList.remove('show');
+      void card.offsetWidth;
+      card.classList.add('show');
+    }
+
+    function hideResult() {
+      document.getElementById('result-card').classList.remove('show');
+    }
+
+    function resetAll() { hideResult(); }
+  </script>
+</body>
+</html>
